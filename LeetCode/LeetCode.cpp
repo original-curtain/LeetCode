@@ -103,14 +103,15 @@ public:
 
 	int maxProfit(vector<int>& prices) {
 		int n = prices.size();
-		int dp0 = 0, dp1 = -prices[0];
+		int buy1 = -prices[0], sell1 = 0;
+		int buy2 = -prices[0], sell2 = 0;
 		for (int i = 1; i < n; ++i) {
-			int newDp0 = max(dp0, dp1 + prices[i]);
-			int newDp1 = max(dp1, dp0 - prices[i]);
-			dp0 = newDp0;
-			dp1 = newDp1;
+			buy1 = max(buy1, -prices[i]);
+			sell1 = max(sell1, buy1 + prices[i]);
+			buy2 = max(buy2, sell1 - prices[i]);
+			sell2 = max(sell2, buy2 + prices[i]);
 		}
-		return dp0;
+		return sell2;
 	}
 };
 
@@ -189,6 +190,6 @@ int main()
 {
 	Solution* s = new Solution();
 
-	vector<int> prices={ 7,1,5,3,6,4 };
+	vector<int> prices={ 3,3,5,0,0,3,1,4 };
 	cout<<s->maxProfit(prices)<<endl;
 }
