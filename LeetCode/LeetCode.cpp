@@ -5,6 +5,7 @@
 #include <map>
 #include <unordered_map>
 #include <algorithm>
+#include <sstream>
 using namespace std;
 
 string convert(string s, int numRows)
@@ -113,83 +114,47 @@ public:
 		}
 		return sell2;
 	}
-};
 
-struct Node
-{
-	int key,val,freq;
-	Node(int _key,int _val,int _freq):key(_key),val(_val),freq(_freq){}
-};
-class LFUCache {
-public:
-	LFUCache(int capacity) {
-		minfreq=0;
-		this->capacity=capacity;
-		key_table.clear();
-		freq_table.clear();
-	}
-
-	int get(int key) {
-		if(capacity==0) return -1;
-		auto it=key_table.find(key);
-		if(it==key_table.end()) return -1;
-		list<Node>::iterator node=it->second;
-		int val=node->val,freq=node->freq;
-		freq_table[freq].erase(node);
-		if (freq_table[freq].size() == 0)
-		{
-			freq_table.erase(freq);
-			if(minfreq==freq) minfreq+=1;
+	vector<int> topStudents(vector<string>& positive_feedback, vector<string>& negative_feedback, vector<string>& report, vector<int>& student_id, int k) {
+		unordered_map<std::string, int> words;
+		for (const auto& word : positive_feedback) {
+			words[word] = 3;
 		}
-		freq_table[freq+1].push_front(Node(key,val,freq+1));
-		key_table[key]=freq_table[freq+1].begin();
-		return val;
-	}
-
-	void put(int key, int value) {
-		if(capacity==0) return;
-		auto it=key_table.find(key);
-		if (it == key_table.end())
-		{
-			if (key_table.size() == capacity)
-			{
-				auto it2=freq_table[minfreq].back();
-				key_table.erase(it2.key);
-				freq_table[minfreq].pop_back();
-				if (freq_table[minfreq].size() == 0)
-				{
-					freq_table.erase(minfreq);
+		for (const auto& word : negative_feedback) {
+			words[word] = -1;
+		}
+		vector<vector<int>> A;
+		for (int i = 0; i < report.size(); i++) {
+			stringstream ss;
+			string w;
+			int score = 0;
+			ss << report[i];
+			while (ss >> w) {
+				if (words.count(w)) {
+					score += words[w];
 				}
 			}
-			freq_table[1].push_front(Node(key,value,1));
-			key_table[key]=freq_table[1].begin();
-			minfreq=1;
+			A.push_back({ -score, student_id[i] });
 		}
-		else
-		{
-			list<Node>::iterator node=it->second;
-			int freq=node->freq;
-			freq_table[freq].erase(node);
-			if (freq_table[freq].size() == 0)
-			{
-				freq_table.erase(freq);
-				if(minfreq==freq) minfreq+=1;
-			}
-			freq_table[freq+1].push_front(Node(key,value,freq+1));
-			key_table[key]=freq_table[freq+1].begin();
+		sort(A.begin(), A.end());
+		vector<int> top_k;
+		for (int i = 0; i < k; i++) {
+			top_k.push_back(A[i][1]);
 		}
+		return top_k;
 	}
-
-private:
-	int minfreq,capacity;
-	unordered_map<int,list<Node>::iterator> key_table;
-	unordered_map<int,list<Node>> freq_table;
 };
 
 int main()
 {
 	Solution* s = new Solution();
 
-	vector<int> prices={ 3,3,5,0,0,3,1,4 };
-	cout<<s->maxProfit(prices)<<endl;
+	vector<string> positive_feedback={ "smart","brilliant","studious" };
+	vector<string> negative_feedback={ "not" };
+	vector<string> report = {
+		"this student is not studious",
+		"the student is smart"
+	};
+	vector<int> student_id={1,2};
+	cout<<Tool::vectorToString(s->topStudents(positive_feedback,negative_feedback,report,student_id,2))<<endl;
 }
